@@ -242,6 +242,7 @@ meta::meta('type::waul', <<'__');
 meta::functor::editable 'waul', inherit => 1, extension => '.waul', default => 'edit';
 
 __
+meta::alias('e', 'edit sdoc::waul::asm-x64');
 meta::bootstrap('html', <<'__');
 <html>
   <head>
@@ -1707,9 +1708,13 @@ that is specified as a string rather than a regular offset. The offset will be f
 Abbreviations are:
 
 | [bwlq]        sizes: byte, word, long, quad
-  [rimx]        operands: GPR, immediate, memory, XMM register
+  [rimsx]       operands: GPR, immediate, memory, SIB, XMM register
 
-  -se- it.prototype /-$.merge/ capture []});
+  -se- it.prototype /          $.bit_vector.prototype
+                    /-$.merge/ arithmetic_ops()
+
+       /where [arithmetic_ops()                = 'add adc and xor or sbb sub cmp'.qw *~![arithmetic_ops_for(x, xi)] -seq,
+               arithmetic_ops_for(word, index) = ]});
 
 __
 meta::template('comment', '\'\';     # A mechanism for line or block comments.');
