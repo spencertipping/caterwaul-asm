@@ -1695,12 +1695,13 @@ need to encode register destinations using instruction names. For instance, 'mov
 is the lvalue.
 
   -se- it /(n[8, 16] *[['r#{x}', x]]   -object -seq)
-          /(n[0, 16] *[['xmm#{x}', x]] -object -seq) /-$.merge/ capture [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7]
+          /(n[0, 16] *[['xmm#{x}', x]] -object -seq) /-$.merge/ capture [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7,
+                                                                         al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7]
 
 Assembler commands.
 These are taken from the Intel programmer's manual and specialized to encode argument types. For example, the Intel 'mov AL, 10H' command would be written here as assembler.movbri(rax, 0x10).
 Size always precedes operand type if both are present. Size is not included for instructions where it is unambiguous; there is no 'pushqr' instruction, for instance. Mod/RM, REX, and SIB bytes
-are generated automatically. Only virtual-mode commands are provided here.
+are generated automatically. Only virtual-mode commands that I find useful are provided here.
 
 Some instructions here are not present in the Intel manuals. These are pseudo-instructions that deal with aspects of the assembler. For instance, the 'jmpl' command jumps to a label offset
 that is specified as a string rather than a regular offset. The offset will be filled in later during the link phase.
@@ -1708,13 +1709,18 @@ that is specified as a string rather than a regular offset. The offset will be f
 Abbreviations are:
 
 | [bwlq]        sizes: byte, word, long, quad
-  [rimsx]       operands: GPR, immediate, memory, SIB, XMM register
+  [arimsx]      operands: %rax, GPR, immediate, memory, SIB, XMM register
+
+So, for example, 'movqrm' moves 64 bits from a GPR to a location in memory. 'movqrr' moves a value from one register to another.
 
   -se- it.prototype /          $.bit_vector.prototype
                     /-$.merge/ arithmetic_ops()
 
-       /where [arithmetic_ops()                = 'add adc and xor or sbb sub cmp'.qw *~![arithmetic_ops_for(x, xi)] -seq,
-               arithmetic_ops_for(word, index) = ]});
+       /where [arithmetic_ops()      = 'add adc and xor or sbb sub cmp'.qw *~![arithmetic_ops_for(xi) %k*k['#{x}#{k}'] -seq] /[x0 /-$.merge/ x] -seq,
+               arithmetic_ops_for(i) = binary_form(
+
+               binary_form(prefix)   = capture [
+]});
 
 __
 meta::template('comment', '\'\';     # A mechanism for line or block comments.');
