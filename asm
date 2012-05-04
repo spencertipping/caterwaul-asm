@@ -1690,37 +1690,21 @@ caterwaul.module('asm.x64', ':all', function ($) {
   ($.asm_x64() = $.bit_vector.apply(this, arguments) -then- this.labels /eq[{}] -then- this.links /eq[{}])
 
 Static members.
-These are useful when combined with -using, as they give you easy ways to refer to all x64 general-purpose and SSE registers. Instructions are unaware of the types of their arguments, so you
-need to encode register destinations using instruction names. For instance, 'movqrr' moves a 64-bit value from one GPR to another. Instructions use Intel ordering; that is, the left-hand side
-is the lvalue.
+These are useful when combined with -using, as they give you easy ways to refer to all x64 general-purpose and SSE registers.
 
-  -se- it /(n[8, 16] *[['r#{x}', x]]   -object -seq)
-          /(n[0, 16] *[['xmm#{x}', x]] -object -seq) /-$.merge/ capture [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7,
-                                                                         al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7]
+  -se- it /          (n[8, 16] *[['r#{x}', x]]   -object -seq)
+          /          (n[0, 16] *[['xmm#{x}', x]] -object -seq)
+          /          capture  [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7,
+                               al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7]
+
+          /-$.merge/ wcapture [rex(r, x, b)   = b01001 << r << x << b |bitwise,
+                               rr(op, r1, r2) = r1 & 8 | r2 & 8 ? rex(r1 & 8, 0, r2 & 8) + op + (b11 << r1 << r2) -bitwise : op + bitwise [b11 << r1 << r2],
+                               rm(op, r, m)   = 
+
 
 Assembler commands.
-These are taken from the Intel programmer's manual and specialized to encode argument types. For example, the Intel 'mov AL, 10H' command would be written here as assembler.movbri(rax, 0x10).
-Size always precedes operand type if both are present. Size is not included for instructions where it is unambiguous; there is no 'pushqr' instruction, for instance. Mod/RM, REX, and SIB bytes
-are generated automatically. Only virtual-mode commands that I find useful are provided here.
-
-Some instructions here are not present in the Intel manuals. These are pseudo-instructions that deal with aspects of the assembler. For instance, the 'jmpl' command jumps to a label offset
-that is specified as a string rather than a regular offset. The offset will be filled in later during the link phase.
-
-Abbreviations are:
-
-| [bwlq]        sizes: byte, word, long, quad
-  [arimsx]      operands: %rax, GPR, immediate, memory, SIB, XMM register
-
-So, for example, 'movqrm' moves 64 bits from a GPR to a location in memory. 'movqrr' moves a value from one register to another.
-
-  -se- it.prototype /          $.bit_vector.prototype
-                    /-$.merge/ arithmetic_ops()
-
-       /where [arithmetic_ops()      = 'add adc and xor or sbb sub cmp'.qw *~![arithmetic_ops_for(xi) %k*k['#{x}#{k}'] -seq] /[x0 /-$.merge/ x] -seq,
-               arithmetic_ops_for(i) = binary_form(
-
-               binary_form(prefix)   = capture [
-]});
+These are encoded minimally as mnemonics for the opcode segment of the command. Many commands use ModR/M and SIB bytes, which are generated using helper methods. Opcodes provide no help in
+determining the operations they accept.
 
 __
 meta::template('comment', '\'\';     # A mechanism for line or block comments.');
