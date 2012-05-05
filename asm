@@ -626,6 +626,16 @@ else    {pop @{$transient{path}}}
 
 __
 meta::function('reload', 'around_hook(\'reload\', sub {execute($_) for grep ! /^bootstrap::/, keys %data});');
+meta::function('render', <<'__');
+file::write('README.md', retrieve('markdown::readme'));
+
+file::write('src/asm-x64.md',   retrieve('markdown::waul::asm-x64'), mkpath => 1);
+file::write('src/asm-x64.waul', retrieve('waul::asm-x64'),           mkpath => 1);
+
+terminal::info('waul-compiling');
+sh('waul -e deps/bitwise.js src/asm-x64.waul && mv src/asm-x64.js .');
+
+__
 meta::function('rm', <<'__');
 around_hook('rm', @_, sub {
   exists $data{$_} or terminal::warning("$_ does not exist") for @_;
@@ -1712,7 +1722,7 @@ These methods generally throw errors for invalid argument combinations, or any c
 because indirecting by %rsp indicates that an SIB byte will be present.
 
           /wcapture [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7,
-                     al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7
+                     al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7,
 
                      assert(cond, s)         = new Error(s) /raise -unless- cond,
 
