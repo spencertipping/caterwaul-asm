@@ -1711,28 +1711,28 @@ constructs. They are:
 These methods generally throw errors for invalid argument combinations, or any combinations that would be interpreted in a misleading way. For example, using the rm() form with r2 === rsp dies
 because indirecting by %rsp indicates that an SIB byte will be present.
 
-          /-$.merge/ wcapture [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7,
-                               al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7
+          /wcapture [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7,
+                     al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7
 
-                               assert(cond, s)         = new Error(s) /raise -unless- cond,
+                     assert(cond, s)         = new Error(s) /raise -unless- cond,
 
-                               rex(r, x, b)            = b01001 << r << x << b |bitwise,
-                               maybe_rex(r, x, b)      = r || x || b ? b01001 << r << x << b |bitwise : $.bit_vector(),
-                               sib(s, i, b)            = $.bit_vector() << s%2 << i%3 << b%3 |bitwise,
+                     rex(r, x, b)            = b01001 << r << x << b |bitwise,
+                     maybe_rex(r, x, b)      = r || x || b ? b01001 << r << x << b |bitwise : $.bit_vector(),
+                     sib(s, i, b)            = $.bit_vector() << s%2 << i%3 << b%3 |bitwise,
 
-                               rr(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b11 << r1%3 << r2%3) -bitwise,
+                     rr(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b11 << r1%3 << r2%3) -bitwise,
 
-                               rd(op, r1, d)           = maybe_rex(r1 & 8, 0, 0)      + op + (b00 << r1%3 << rbp%3) + d[31%0] -bitwise,
-                               rm(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b00 << r1%3 << r2%3)            -bitwise -se- assert(r2 !== rsp, 's/rm(rsp)/rs()/')
-                                                                                                                                       -se- assert(r2 !== rbp, 's/rm(rbp)/rd()/')
-                                                                                                                                       -se- assert(r2 & 7 !== rbp, 's/rm(r13)/rm8(r13)/'),
+                     rd(op, r1, d)           = maybe_rex(r1 & 8, 0, 0)      + op + (b00 << r1%3 << rbp%3) + d[31%0] -bitwise,
+                     rm(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b00 << r1%3 << r2%3)            -bitwise -se- assert(r2 !== rsp, 's/rm(rsp)/rs()/')
+                                                                                                                             -se- assert(r2 !== rbp, 's/rm(rbp)/rd()/')
+                                                                                                                             -se- assert(r2 & 7 !== rbp, 's/rm(r13)/rm8(r13)/'),
 
-                               rm8(op, r1, r2, d)      = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b01 << r1%3 << r2%3) + d[7%0]   -bitwise -se- assert(r2 !== rsp, 's/rm8(rsp)/rs8()/'),
-                               rm32(op, r1, r2, d)     = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b10 << r1%3 << r2%3) + d[31%0]  -bitwise -se- assert(r2 !== rsp, 's/rm32(rsp)/rs32()/'),
+                     rm8(op, r1, r2, d)      = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b01 << r1%3 << r2%3) + d[7%0]   -bitwise -se- assert(r2 !== rsp, 's/rm8(rsp)/rs8()/'),
+                     rm32(op, r1, r2, d)     = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b10 << r1%3 << r2%3) + d[31%0]  -bitwise -se- assert(r2 !== rsp, 's/rm32(rsp)/rs32()/'),
 
-                               rs(op, r, s, i, b)      = maybe_rex(r & 8, i & 8, b & 8) + op + (b00 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
-                               rs8(op, r, s, i, b, d)  = maybe_rex(r & 8, i & 8, b & 8) + op + (b01 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
-                               rs32(op, r, s, i, b, d) = maybe_rex(r & 8, i & 8, b & 8) + op + (b10 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
+                     rs(op, r, s, i, b)      = maybe_rex(r & 8, i & 8, b & 8) + op + (b00 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
+                     rs8(op, r, s, i, b, d)  = maybe_rex(r & 8, i & 8, b & 8) + op + (b01 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
+                     rs32(op, r, s, i, b, d) = maybe_rex(r & 8, i & 8, b & 8) + op + (b10 << r%3 << rsp%3) + sib(s, i, b) -bitwise]
 
 Assembler commands.
 These are encoded minimally as mnemonics for the opcode segment of the command. Many commands use ModR/M and SIB bytes, which are generated using helper methods. Opcodes provide no help in
@@ -1745,11 +1745,30 @@ to operand order. The separate-opcode approach more closely mirrors the hardware
 
 Instructions that are invalid in 64-bit protected mode are not listed here.
 
-                               // Arithmetic ops
-                               addbr = x00, addqr = x01, addbl = x02, addql = x03, addabl = x04, addaql = x05, orbr  = x08, orqr  = x09, orbl  = x0a, orql  = x0b, orabl  = x0c, oraql  = x0d,
-                               adcbr = x10, adcqr = x11, adcbl = x12, adcql = x13, adcabl = x14, adcaql = x15, sbbbr = x18, sbbqr = x19, sbbbl = x1a, sbbql = x1b, sbbabl = x1c, sbbaql = x1d,
-                               andbr = x20, andqr = x21, andbl = x22, andql = x23, andabl = x24, andaql = x25, subbr = x28, subqr = x29, subbl = x2a, subql = x2b, subabl = x2c, subaql = x2d,
-                               xorbr = x30, xorqr = x31, xorbl = x32, xorql = x33, xorabl = x34, xoraql = x35, cmpbr = x38, cmpqr = x39, cmpbl = x3a, cmpql = x3b, cmpabl = x3c, cmpaql = x3d]
+          /-$.merge/ wcapture [
+
+              /* Arithmetic */ addbr = x00, addqr = x01, addbl = x02, addql = x03, addabl = x04, addaql = x05,   orbr  = x08, orqr  = x09, orbl  = x0a, orql  = x0b, orabl  = x0c, oraql  = x0d,
+                               adcbr = x10, adcqr = x11, adcbl = x12, adcql = x13, adcabl = x14, adcaql = x15,   sbbbr = x18, sbbqr = x19, sbbbl = x1a, sbbql = x1b, sbbabl = x1c, sbbaql = x1d,
+                               andbr = x20, andqr = x21, andbl = x22, andql = x23, andabl = x24, andaql = x25,   subbr = x28, subqr = x29, subbl = x2a, subql = x2b, subabl = x2c, subaql = x2d,
+                               xorbr = x30, xorqr = x31, xorbl = x32, xorql = x33, xorabl = x34, xoraql = x35,   cmpbr = x38, cmpqr = x39, cmpbl = x3a, cmpql = x3b, cmpabl = x3c, cmpaql = x3d,
+
+               /* stack ops */ push(r) = $.asm_x64.maybe_rex(0, 0, r & 8) + b01010 << r%3,  /* test, xchg */ testb = x84, testq = x85, xchgb = x86, xchgq = x87,
+                               pop(r)  = $.asm_x64.maybe_rex(0, 0, r & 8) + b01011 << r%3,                   xchga(r) = $.asm_x64.maybe_rex(0, 0, r & 8) + b10010 << r%3,
+
+                     /* jcc */ j(condition, d) = (x7 << condition%4) + d[7%0],  o = 0x0, no = 0x1, b = 0x2, nb = 0x3, z = 0x4, nz = 0x5, na = 0x6, a = 0x7,
+                                                                                s = 0x8, ns = 0x9, p = 0xa, np = 0xb, l = 0xc, nl = 0xd, ng = 0xe, g = 0xf,
+
+                   /* flags */ sahf = x9e, lahf = x9f, clc = xf8, stc = xf9,                     /* debug/control registers */ movcl = x0f20, movdl = x0f21, movcr = x0f22, movdr = x0f23,
+            /* stack frames */ enter(size, level) = xc8 + size[15%0] + level[7%0], leave = xc9,                                rdtsc = x0f31, rdmsr = x0f32, rdpmc = x0f33,
+                     /* int */ int(n) = xcd + n[7%0],                                                            /* syscall */ sysen = x0f34, sysex = x0f35,
+
+                    /* SSE2 */ movupsl = x__0f10, movupsr = x__0f11, movupdl = x660f10, movupdr = x660f11,   unpcklps = x0f14, unpcklpd = x660f14,
+                               movssl  = xf30f10, movssr  = xf30f11, movsdl  = xf20f10, movsdr  = xf20f11,   unpckhps = x0f15, unpckhpd = x660f15,
+
+                               movapsl = x__0f28, movapsr = x__0f29, movapdl = x660f28, movapdr = x660f29,
+                               cvtpis  = x__0f2a, cvtpid  = x660f2a, cvtsis  = xf30f2a, cvtsid  = xf20f2a,
+
+                    /* cmov */ cmovl(condition) = x0f4 << condition%4, bitwise]});
 
 __
 meta::template('comment', '\'\';     # A mechanism for line or block comments.');
