@@ -1687,24 +1687,69 @@ This assembler provides mnemonics for x86-64 assembly language commands, registe
 to use the smallest possible jump command. Assemblers are static subclasses of bit-vectors.
 
 caterwaul.module('asm.x64', ':all', function ($) {
-  ($.asm_x64() = $.bit_vector.apply(this, arguments) -then- this.labels /eq[{}] -then- this.links /eq[{}])
+  ($.asm_x64() = $.bit_vector.apply(this, arguments) -then- this.labels /eq.{} -then- this.links /eq.{})
 
 Static members.
 These are useful when combined with -using, as they give you easy ways to refer to all x64 general-purpose and SSE registers.
 
-  -se- it /          (n[8, 16] *[['r#{x}', x]]   -object -seq)
-          /          (n[0, 16] *[['xmm#{x}', x]] -object -seq)
-          /          capture  [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7,
-                               al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7]
+  -se- it /(n[8, 16] *[['r#{x}', x]]   -object -seq)
+          /(n[0, 16] *[['xmm#{x}', x]] -object -seq)
 
-          /-$.merge/ wcapture [rex(r, x, b)   = b01001 << r << x << b |bitwise,
-                               rr(op, r1, r2) = r1 & 8 | r2 & 8 ? rex(r1 & 8, 0, r2 & 8) + op + (b11 << r1 << r2) -bitwise : op + bitwise [b11 << r1 << r2],
-                               rm(op, r, m)   = 
+Operand encoding.
+Operands for most commands are encoded in a ModR/M byte, possibly with an SIB byte and displacement if memory is one of the operands. This library provides a few helpers to generate these
+constructs. They are:
 
+| 1. rr(op, r1, r2)           Generates a register-register instruction, creating a REX prefix if necessary.
+  2. rm(op, r1, r2)           Generates a register-indirect instruction, creating a REX prefix if necessary. No SIB byte.
+  3. rd(op, r1, d)            Generates a register-RIP-indirect instruction, creating a REX prefix if necessary. No SIB byte, displacement is a 32-bit vector.
+  4. rm8(op, r1, r2, d)       Register-indirect + 8-bit displacement, no SIB byte. Displacement is specified as a bit vector, not a number.
+  5. rm32(op, r1, r2, d)      Register-indirect + 32-bit displacement, no SIB byte. Displacement is specified as a bit vector, not a number.
+  6. rs(op, r, s, i, b)       Register-indirect with SIB byte, no displacement. s must be 1, 2, 4, or 8.
+  7. rs8(op, r, s, i, b, d)   Register-indirect with SIB byte, 8-bit displacement specified as a bit vector.
+  8. rs32(op, r, s, i, b, d)  Register-indirect with SIB byte, 32-bit displacement specified as a bit vector.
+
+These methods generally throw errors for invalid argument combinations, or any combinations that would be interpreted in a misleading way. For example, using the rm() form with r2 === rsp dies
+because indirecting by %rsp indicates that an SIB byte will be present.
+
+          /-$.merge/ wcapture [rax = 0, rcx = 1, rdx = 2, rbx = 3, rsp = 4, rbp = 5, rsi = 6, rdi = 7,
+                               al  = 0, cl  = 1, dl  = 2, bl  = 3, ah  = 4, ch  = 5, dh  = 6, bh  = 7
+
+                               assert(cond, s)         = new Error(s) /raise -unless- cond,
+
+                               rex(r, x, b)            = b01001 << r << x << b |bitwise,
+                               maybe_rex(r, x, b)      = r || x || b ? b01001 << r << x << b |bitwise : $.bit_vector(),
+                               sib(s, i, b)            = $.bit_vector() << s%2 << i%3 << b%3 |bitwise,
+
+                               rr(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b11 << r1%3 << r2%3) -bitwise,
+
+                               rd(op, r1, d)           = maybe_rex(r1 & 8, 0, 0)      + op + (b00 << r1%3 << rbp%3) + d[31%0] -bitwise,
+                               rm(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b00 << r1%3 << r2%3)            -bitwise -se- assert(r2 !== rsp, 's/rm(rsp)/rs()/')
+                                                                                                                                       -se- assert(r2 !== rbp, 's/rm(rbp)/rd()/')
+                                                                                                                                       -se- assert(r2 & 7 !== rbp, 's/rm(r13)/rm8(r13)/'),
+
+                               rm8(op, r1, r2, d)      = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b01 << r1%3 << r2%3) + d[7%0]   -bitwise -se- assert(r2 !== rsp, 's/rm8(rsp)/rs8()/'),
+                               rm32(op, r1, r2, d)     = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b10 << r1%3 << r2%3) + d[31%0]  -bitwise -se- assert(r2 !== rsp, 's/rm32(rsp)/rs32()/'),
+
+                               rs(op, r, s, i, b)      = maybe_rex(r & 8, i & 8, b & 8) + op + (b00 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
+                               rs8(op, r, s, i, b, d)  = maybe_rex(r & 8, i & 8, b & 8) + op + (b01 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
+                               rs32(op, r, s, i, b, d) = maybe_rex(r & 8, i & 8, b & 8) + op + (b10 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
 
 Assembler commands.
 These are encoded minimally as mnemonics for the opcode segment of the command. Many commands use ModR/M and SIB bytes, which are generated using helper methods. Opcodes provide no help in
-determining the operations they accept.
+determining the operands they accept; you need to know this up-front. Further, for unary operators that encode opcode bits in ModR/M, you're responsible for using rr() above to figure out
+where the extra opcode bits go and writing them out manually.
+
+In other words, this assembler totally sucks. However, it gives you lots of control about low-level encoding decisions. It also uses a more regular encoding to deal with reversible commands.
+For example, movql moves a 64-bit value into its left operand, movqr moves a 64-bit value into its right operand. Normally this relationship is inferred by the assembler, making it sensitive
+to operand order. The separate-opcode approach more closely mirrors the hardware model and gives you a more concise variant.
+
+Instructions that are invalid in 64-bit protected mode are not listed here.
+
+                               // Arithmetic ops
+                               addbr = x00, addqr = x01, addbl = x02, addql = x03, addabl = x04, addaql = x05, orbr  = x08, orqr  = x09, orbl  = x0a, orql  = x0b, orabl  = x0c, oraql  = x0d,
+                               adcbr = x10, adcqr = x11, adcbl = x12, adcql = x13, adcabl = x14, adcaql = x15, sbbbr = x18, sbbqr = x19, sbbbl = x1a, sbbql = x1b, sbbabl = x1c, sbbaql = x1d,
+                               andbr = x20, andqr = x21, andbl = x22, andql = x23, andabl = x24, andaql = x25, subbr = x28, subqr = x29, subbl = x2a, subql = x2b, subabl = x2c, subaql = x2d,
+                               xorbr = x30, xorqr = x31, xorbl = x32, xorql = x33, xorabl = x34, xoraql = x35, cmpbr = x38, cmpqr = x39, cmpbl = x3a, cmpql = x3b, cmpabl = x3c, cmpaql = x3d]
 
 __
 meta::template('comment', '\'\';     # A mechanism for line or block comments.');
