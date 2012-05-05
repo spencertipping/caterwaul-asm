@@ -1762,11 +1762,22 @@ Instructions that are invalid in 64-bit protected mode are not listed here.
             /* stack frames */ enter(size, level) = xc8 + size[15%0] + level[7%0], leave = xc9,                                rdtsc = x0f31, rdmsr = x0f32, rdpmc = x0f33,
                      /* int */ int(n) = xcd + n[7%0],                                                            /* syscall */ sysen = x0f34, sysex = x0f35,
 
-                    /* SSE2 */ movupsl = x__0f10, movupsr = x__0f11, movupdl = x660f10, movupdr = x660f11,   unpcklps = x0f14, unpcklpd = x660f14,
-                               movssl  = xf30f10, movssr  = xf30f11, movsdl  = xf20f10, movsdr  = xf20f11,   unpckhps = x0f15, unpckhpd = x660f15,
+                    /* SSE2 */ movupsl = x__0f10, movupsr = x__0f11, movupdl = x660f10, movupdr = x660f11,   unpcklps = x0f14, unpcklpd = x660f14,   ucomiss = x__0f2e, comiss = x__0f2f,
+                               movssl  = xf30f10, movssr  = xf30f11, movsdl  = xf20f10, movsdr  = xf20f11,   unpckhps = x0f15, unpckhpd = x660f15,   ucomisd = x660f2e, comisd = x660f2f,
 
-                               movapsl = x__0f28, movapsr = x__0f29, movapdl = x660f28, movapdr = x660f29,
-                               cvtpis  = x__0f2a, cvtpid  = x660f2a, cvtsis  = xf30f2a, cvtsid  = xf20f2a,
+                               movapsl = x__0f28, movapsr = x__0f29, movapdl = x660f28, movapdr = x660f29,   cvttpsi = x__0f2c, cvttpdi = x660f2c, cvttssi = xf30f2c, cvttsdi = xf20f2c,
+                               cvtpis  = x__0f2a, cvtpid  = x660f2a, cvtsis  = xf30f2a, cvtsid  = xf20f2a,   cvtpsi  = x__0f2d, cvtpdi  = x660f2d, cvtssi  = xf30f2d, cvtsdi  = xf20f2c,
+
+                               movmskpsl = x__0f50,   sqrtpsl = x__0f51, sqrtssl = xf30f51,   rsqrtpsl = x__0f52,   rcppsl = x__0f53,
+                               movmskpdl = x660f50,   sqrtpdl = x660f51, sqrtsdl = xf20f51,   rsqrtssl = xf30f52,   rcpssl = xf30f53,
+
+                               andpsl = x__0f54, andnpsl = x__0f55, orpsl = x__0f56, xorpsl = x__0f57,
+                               andpdl = x660f54, andnpdl = x660f55, orpdl = x660f56, xorpdl = x660f57,
+
+                               addpsl = x__0f58, mulpsl = x__0f59,   cvtpsdl = x__0f5a, cvtpqsl  = x__0f5b,   subpsl = x__0f5c, minpsl = x__0f5d, divpsl = x__0f5e, maxpsl = x__0f5f,
+                               addpdl = x660f58, mulpdl = x660f59,   cvtpdsl = x660f5a, cvtpqdl  = x660f5b,   subpdl = x660f5c, minpdl = x660f5d, divpdl = x660f5e, maxpdl = x660f5f,
+                               addssl = xf30f58, mulssl = xf30f59,   cvtssdl = xf30f5a, cvttpsql = xf30f5b,   subssl = xf30f5c, minssl = xf30f5d, divssl = xf30f5e, maxssl = xf30f5f,
+                               addsdl = xf20f58, mulsdl = xf20f59,   cvtsdsl = xf20f5a,                       subsdl = xf20f5c, minsdl = xf20f5d, divsdl = xf20f5e, maxsdl = xf20f5f,
 
                     /* cmov */ cmovl(condition) = x0f4 << condition%4, bitwise]});
 
