@@ -1765,6 +1765,8 @@ Instructions that are invalid in 64-bit protected mode are not listed here.
                /* stack ops */ push(r) = $.asm_x64.maybe_rex(0, 0, r & 8) + b01010 << r%3,  /* test, xchg */ testb = x84, testq = x85, xchgb = x86, xchgq = x87,
                                pop(r)  = $.asm_x64.maybe_rex(0, 0, r & 8) + b01011 << r%3,                   xchga(r) = $.asm_x64.maybe_rex(0, 0, r & 8) + b10010 << r%3,
 
+                    /* movi */ movi(r) = $.asm_x64.maybe_rex(0, 0, r & 8) + b10111 << r%3,                   movql = x89, movqr = x8b,
+
                      /* jcc */ j(condition, d) = (x7 << condition%4) + d[7%0],  o = 0x0, no = 0x1, b = 0x2, nb = 0x3, z = 0x4, nz = 0x5, na = 0x6, a = 0x7,
                                                                                 s = 0x8, ns = 0x9, p = 0xa, np = 0xb, l = 0xc, nl = 0xd, ng = 0xe, g = 0xf,
 
