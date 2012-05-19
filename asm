@@ -1733,16 +1733,16 @@ because indirecting by %rsp indicates that an SIB byte will be present.
                      rr(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b11 << r1%3 << r2%3) -bitwise,
 
                      rd(op, r1, d)           = maybe_rex(r1 & 8, 0, 0)      + op + (b00 << r1%3 << rbp%3) + d[31%0] -bitwise,
-                     rm(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b00 << r1%3 << r2%3)            -bitwise -se- assert(r2 !== rsp, 's/rm(rsp)/rs()/')
-                                                                                                                             -se- assert(r2 !== rbp, 's/rm(rbp)/rd()/')
+                     rm(op, r1, r2)          = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b00 << r1%3 << r2%3)            -bitwise -se- assert(r2     !== rsp, 's/rm(rsp)/rs()/')
+                                                                                                                             -se- assert(r2     !== rbp, 's/rm(rbp)/rd()/')
                                                                                                                              -se- assert(r2 & 7 !== rbp, 's/rm(r13)/rm8(r13)/'),
 
-                     rm8(op, r1, r2, d)      = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b01 << r1%3 << r2%3) + d[7%0]   -bitwise -se- assert(r2 !== rsp, 's/rm8(rsp)/rs8()/'),
-                     rm32(op, r1, r2, d)     = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b10 << r1%3 << r2%3) + d[31%0]  -bitwise -se- assert(r2 !== rsp, 's/rm32(rsp)/rs32()/'),
+                     rm8(op, r1, r2, d)      = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b01 << r1%3 << r2%3) + d[7%0]   -bitwise -se- assert(r2     !== rsp, 's/rm8(rsp)/rs8()/'),
+                     rm32(op, r1, r2, d)     = maybe_rex(r1 & 8, 0, r2 & 8) + op + (b10 << r1%3 << r2%3) + d[31%0]  -bitwise -se- assert(r2     !== rsp, 's/rm32(rsp)/rs32()/'),
 
-                     rs(op, r, s, i, b)      = maybe_rex(r & 8, i & 8, b & 8) + op + (b00 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
-                     rs8(op, r, s, i, b, d)  = maybe_rex(r & 8, i & 8, b & 8) + op + (b01 << r%3 << rsp%3) + sib(s, i, b) -bitwise,
-                     rs32(op, r, s, i, b, d) = maybe_rex(r & 8, i & 8, b & 8) + op + (b10 << r%3 << rsp%3) + sib(s, i, b) -bitwise]
+                     rs(op, r, s, i, b)      = maybe_rex(r & 8, i & 8, b & 8) + op + (b00 << r%3 << rsp%3) + sib(s, i, b)           -bitwise,
+                     rs8(op, r, s, i, b, d)  = maybe_rex(r & 8, i & 8, b & 8) + op + (b01 << r%3 << rsp%3) + sib(s, i, b) + d[7%0]  -bitwise,
+                     rs32(op, r, s, i, b, d) = maybe_rex(r & 8, i & 8, b & 8) + op + (b10 << r%3 << rsp%3) + sib(s, i, b) + d[31%0] -bitwise]
 
 Assembler commands.
 These are encoded minimally as mnemonics for the opcode segment of the command. Many commands use ModR/M and SIB bytes, which are generated using helper methods. Opcodes provide no help in
